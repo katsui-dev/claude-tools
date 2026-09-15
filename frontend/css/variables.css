@@ -1,0 +1,66 @@
+/* ==========================================================================
+   デザイントークン（色・余白・角丸・影・フォント）
+   デザインコンセプト：白ベース + ネイビー + グリーン、警告はオレンジ/赤
+   ========================================================================== */
+:root {
+  /* Base */
+  --color-bg: #F4F7FB;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #F8FAFD;
+
+  /* Navy (メイン) */
+  --color-navy-900: #0A1930;
+  --color-navy-800: #10233F;
+  --color-navy-700: #17304F;
+  --color-navy-600: #24405F;
+  --color-navy-500: #3A5578;
+
+  /* Green (アクセント / 順調) */
+  --color-green-700: #147350;
+  --color-green-600: #1B9A6C;
+  --color-green-100: #E3F6EC;
+
+  /* Yellow (注意) */
+  --color-yellow-700: #9A7300;
+  --color-yellow-600: #D9A400;
+  --color-yellow-100: #FFF6DC;
+
+  /* Orange (警告寄り) */
+  --color-orange-700: #A85410;
+  --color-orange-600: #E0791F;
+  --color-orange-100: #FDEEE0;
+
+  /* Red (要対応) */
+  --color-red-700: #A5322B;
+  --color-red-600: #D6483F;
+  --color-red-100: #FBEAE9;
+
+  /* Text */
+  --color-text-900: #16202E;
+  --color-text-700: #3C4657;
+  --color-text-500: #6C7686;
+  --color-text-inverse: #FFFFFF;
+
+  --color-border: #E4E9F1;
+  --color-border-strong: #CBD5E3;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(10, 25, 48, 0.06);
+  --shadow-md: 0 6px 20px rgba(10, 25, 48, 0.08);
+  --shadow-lg: 0 16px 40px rgba(10, 25, 48, 0.14);
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  /* Layout */
+  --sidebar-width: 260px;
+  --mobile-header-height: 56px;
+  --bottom-nav-height: 64px;
+
+  /* Type */
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
+}
