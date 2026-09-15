@@ -73,8 +73,32 @@ App.Pages.home = (function () {
     );
   }
 
-  function html() {
-    var kpiCards = App.Data.kpis.map(C.renderKpiCard).join('');
+  // Phase1のダミーデータからid→アイコンの対応表を作る（アイコンは見た目だけの情報なので
+  // スプレッドシート側には持たせず、フロントエンド側で保持する）
+  var KPI_ICONS = App.Data.kpis.reduce(function (map, k) {
+    map[k.id] = k.icon;
+    return map;
+  }, {});
+
+  function kpiGridHtml(kpis) {
+    return kpis.map(function (k) {
+      return C.renderKpiCard(Object.assign({ icon: KPI_ICONS[k.id] || '' }, k));
+    }).join('');
+  }
+
+  function dataSourceBannerHtml(state, detail) {
+    var map = {
+      dummy: { level: 'neutral', label: 'ダミーデータ表示中（Phase2セットアップ待ち）' },
+      loading: { level: 'neutral', label: 'Googleスプレッドシートからデータを取得中…' },
+      live: { level: 'good', label: '実データ表示中' + (detail ? '（' + detail + '）' : '') },
+      error: { level: 'bad', label: 'データ取得に失敗、ダミーデータを表示中' }
+    };
+    var m = map[state] || map.dummy;
+    var extra = state === 'error' && detail ? '<div class="stat-sub" style="margin-top:6px">詳細: ' + U.escapeHtml(detail) + '</div>' : '';
+    return '<div class="phase-note" id="dataSourceBanner">' + C.renderBadge(m.level, m.label) + extra + '</div>';
+  }
+
+  function html(kpis, bannerState, bannerDetail) {
     var alerts = App.Data.alerts.map(C.renderAlertItem).join('');
     var tasks = weekTasks().map(taskRowHtml).join('');
     var consultations = pendingConsultations().map(consultationCardHtml).join('');
@@ -85,7 +109,9 @@ App.Pages.home = (function () {
         '<div><div class="page-title">経営ダッシュボード</div><div class="page-date">' + U.todayLabel() + '</div></div>' +
       '</div>' +
 
-      '<div class="section kpi-grid">' + kpiCards + '</div>' +
+      dataSourceBannerHtml(bannerState, bannerDetail) +
+
+      '<div class="section kpi-grid" id="kpiGrid">' + kpiGridHtml(kpis) + '</div>' +
 
       '<div class="section section-card">' +
         C.renderSectionHeader('要対応事項', '数値の裏にある「何が問題か」をまとめています', '', '⚠️') +
@@ -133,8 +159,23 @@ App.Pages.home = (function () {
   }
 
   function mount(container) {
-    container.innerHTML = html();
+    var configured = App.Api.isConfigured();
+    container.innerHTML = html(App.Data.kpis, configured ? 'loading' : 'dummy');
     bind(container);
+
+    if (!configured) return;
+
+    App.Api.getDashboardData()
+      .then(function (data) {
+        if (!container.isConnected) return; // 画面遷移済みなら何もしない
+        U.qs('#kpiGrid', container).innerHTML = kpiGridHtml(data.kpis);
+        U.qs('#dataSourceBanner', container).outerHTML = dataSourceBannerHtml('live', U.todayLabel());
+      })
+      .catch(function (err) {
+        console.error('[HOME] getDashboardData failed:', err);
+        if (!container.isConnected) return;
+        U.qs('#dataSourceBanner', container).outerHTML = dataSourceBannerHtml('error', err.message);
+      });
   }
 
   return { mount: mount };

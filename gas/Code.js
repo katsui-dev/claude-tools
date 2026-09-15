@@ -1,29 +1,34 @@
 /**
- * Phase3で実装するGASエントリーポイント（雛形）。
- * doGet でHTML Serviceの画面を返し、google.script.run経由で
- * docs/GAS_DESIGN.md に定義した各関数を呼び出せるようにする予定です。
+ * GAS Webアプリのエントリーポイント。
+ * フロントエンドから ?action=xxx でGETすると、対応するデータ取得関数を呼び、
+ * JSON（{success, data}または{success:false, message}）を返す。
+ *
+ * デプロイ方法は docs/GAS_DESIGN.md および PHASE2セットアップ手順を参照。
  */
 
-// function doGet(e) {
-//   return HtmlService.createTemplateFromFile('index')
-//     .evaluate()
-//     .setTitle('経営ダッシュボード')
-//     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-// }
+// セキュリティ：呼び出せる関数を許可リストに限定する（任意の関数を実行させない）
+var ACTION_HANDLERS = {
+  getDashboardData: getDashboardData
+  // Phase3以降、他の画面のデータ取得関数をここに追加していく
+};
 
-// function getDashboardData() {}
-// function getAdvertisingData() {}
-// function getLeadData() {}
-// function getHpData() {}
-// function getRecruitingData() {}
-// function getActivityPlanData() {}
-// function getTasks() {}
-// function getConsultations() {}
-// function getActivityLogs() {}
+function doGet(e) {
+  var action = e && e.parameter && e.parameter.action;
 
-// function createTask(taskObject) {}
-// function createConsultation(consultationObject) {}
-// function createActivityLog(logObject) {}
+  if (!action) {
+    return errorResponse_('actionパラメータが指定されていません。例: ?action=getDashboardData');
+  }
 
-// function updateTask(id, patch) {}
-// function updateConsultation(id, patch) {}
+  var handler = ACTION_HANDLERS[action];
+  if (!handler) {
+    return errorResponse_('不明なaction、またはまだ実装されていません: ' + action);
+  }
+
+  try {
+    var data = handler();
+    return successResponse_(data);
+  } catch (err) {
+    logError_('doGet:' + action, err);
+    return errorResponse_(err.message || String(err));
+  }
+}
